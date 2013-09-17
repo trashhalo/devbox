@@ -1,3 +1,7 @@
+$username = "trashhalo"
+$fullname = "Stephen Solka"
+$email = "stephen@mindjunk.org"
+
 package{'vim':
  ensure => 'latest'
 }
@@ -5,11 +9,11 @@ package{'git-core':
  ensure => 'latest'
 }
 exec{'git-user':
- command=>'/bin/su --command="git config --global user.name \"Stephen Solka\"" trashhalo',
+ command=>"/bin/su --command='git config --global user.name \"$fullname\"' $username",
  require=> Package['git-core'],
 }
 exec{'git-email':
- command=>'/bin/su --command="git config --global user.email \"stephen@mindjunk.org\"" trashhalo',
+ command=>"/bin/su --command='git config --global user.email \"$email\"' $username",
  require=> Package['git-core'],
 }
 exec{'add-sublime-ppa':
@@ -37,28 +41,29 @@ exec{'install-vagrant':
  creates=>'/usr/bin/vagrant'
 }
 exec{'add-ubuntu-vagrant-box':
- command=>'/bin/su --command="/usr/bin/vagrant box add precise64 http://files.vagrantup.com/precise64.box" trashhalo',
+ command=>"/bin/su --command='/usr/bin/vagrant box add precise64 http://files.vagrantup.com/precise64.box' $username",
  require=>Exec['install-vagrant'],
- creates=>'/home/trashhalo/.vagrant.d/boxes/precise64'
+ creates=>"/home/$username/.vagrant.d/boxes/precise64"
 }
 exec{'add-vagrant-plugin-list':
- command=>'/bin/su --command="/usr/bin/vagrant plugin install vagrant-list" trashhalo',
+ command=>"/bin/su --command='/usr/bin/vagrant plugin install vagrant-list' $username",
  require=>Exec['install-vagrant']
 }
-file{'/home/trashhalo/dev':
+file{"/home/$username/dev":
  ensure=>'directory',
- owner=>'trashhalo'
+ owner=>$username
 }
-file{'/home/trashhalo/dev/src':
+file{"/home/$username/dev/src":
  ensure=>'directory',
- owner=>'trashhalo'
+ owner=>$username
 }
-file{'/home/trashhalo/dev/tools':
+file{"/home/$username/dev/tools":
  ensure=>'directory',
- owner=>'trashhalo'
+ owner=>$username
 }
 exec{'add-chrome-key':
- command=>'/usr/bin/wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -'
+ command=>'/usr/bin/wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -',
+ unless=>'/usr/bin/strings /etc/apt/trusted.gpg|grep google 2>/dev/null'
 }
 file{'/etc/apt/sources.list.d/google.list':
  ensure=>"present",
@@ -75,10 +80,10 @@ package{"google-chrome-stable":
  require=>Exec["apt-update-google"]
 }
 exec{'create-ssh-key':
- command=>'/bin/su --command="ssh-keygen -f /home/trashhalo/.ssh/id_rsa -N \"\"" trashhalo',
- creates=>'/home/trashhalo/.ssh/id_rsa'
+ command=>"/bin/su --command='ssh-keygen -f /home/$username/.ssh/id_rsa -N \"\"' $username",
+ creates=>"/home/$username/.ssh/id_rsa"
 }
-file{'/home/trashhalo/.ssh/id_rsa':
+file{"/home/$username/.ssh/id_rsa":
  require=>Exec['create-ssh-key'],
  mode=>"0600"
 }

@@ -3,7 +3,8 @@
 puppet files for my personal dev box.
 
 ##Setup
-`./boostrap.sh`
+1. Take a look at [init.pp](manifests/init.pp) for configurable variables
+2. Execute `./boostrap.sh`
 
 ##What does it install?
 

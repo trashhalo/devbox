@@ -113,6 +113,7 @@ file{"/home/$username/.ssh/id_rsa":
 
 
 ###### Spotify
+
 exec{'add-spotify-key':
  command=>'/usr/bin/apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 94558F59',
  unless=>'/usr/bin/strings /etc/apt/trusted.gpg|grep spotify 2>/dev/null'

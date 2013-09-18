@@ -31,3 +31,4 @@ Configure:
 * generates ssh private key
 * adds precise64 vagrant box
 * installs vagrant-list plugin
+* installs oh-my-zsh and changes shell to zsh

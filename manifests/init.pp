@@ -136,3 +136,14 @@ package{'spotify-client':
  ensure=>'latest',
  require=>Exec['apt-update-spotify']
 }
+
+###### Oh My ZSH
+exec{'oh-my':
+ command=> "/bin/su -l --command=\"curl -L https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh | sh\" $username",
+ require=>[Package['zsh'],Package['curl']],
+ creates=>"/home/$username/.oh-my-zsh"
+}
+user { "$username":
+  ensure => present,
+  shell  => "/bin/zsh",
+}

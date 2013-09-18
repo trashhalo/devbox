@@ -45,6 +45,10 @@ exec{'git-email':
  command=>"/bin/su --command='git config --global user.email \"$email\"' $username",
  require=> Package['git-core'],
 }
+exec{'git-push-style':
+ command=>"/bin/su --command='git config --global push.default simple' $username",
+ require=> Package['git-core'],
+}
 
 ###### Sublime Text
 

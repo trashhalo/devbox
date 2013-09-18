@@ -2,12 +2,41 @@ $username = "trashhalo"
 $fullname = "Stephen Solka"
 $email = "stephen@mindjunk.org"
 
+###### Global Packages
+
 package{'vim':
  ensure => 'latest'
 }
 package{'git-core':
  ensure => 'latest'
 }
+package{'zsh':
+ ensure=>'latest'
+}
+package{'virtualbox':
+ ensure => 'latest'
+}
+package{'curl':
+ ensure => 'latest'
+}
+
+####### Development Folders
+
+file{"/home/$username/dev":
+ ensure=>'directory',
+ owner=>$username
+}
+file{"/home/$username/dev/src":
+ ensure=>'directory',
+ owner=>$username
+}
+file{"/home/$username/dev/tools":
+ ensure=>'directory',
+ owner=>$username
+}
+
+####### Git Config
+
 exec{'git-user':
  command=>"/bin/su --command='git config --global user.name \"$fullname\"' $username",
  require=> Package['git-core'],
@@ -16,6 +45,9 @@ exec{'git-email':
  command=>"/bin/su --command='git config --global user.email \"$email\"' $username",
  require=> Package['git-core'],
 }
+
+###### Sublime Text
+
 exec{'add-sublime-ppa':
  command=>'/usr/bin/add-apt-repository ppa:webupd8team/sublime-text-2 && apt-get update',
  creates=>'/etc/apt/sources.list.d/webupd8team-sublime-text-2-raring.list'
@@ -24,12 +56,9 @@ package{'sublime-text':
  ensure => 'latest',
  require => Exec['add-sublime-ppa']
 }
-package{'virtualbox':
- ensure => 'latest'
-}
-package{'curl':
- ensure => 'latest'
-}
+
+###### Vagrant
+
 exec{'download-vagrant':
  command=>'/usr/bin/curl -o /tmp/vagrant.deb http://files.vagrantup.com/packages/b12c7e8814171c1295ef82416ffe51e8a168a244/vagrant_1.3.1_x86_64.deb',
  creates=>'/tmp/vagrant.deb',
@@ -49,18 +78,9 @@ exec{'add-vagrant-plugin-list':
  command=>"/bin/su --command='/usr/bin/vagrant plugin install vagrant-list' $username",
  require=>Exec['install-vagrant']
 }
-file{"/home/$username/dev":
- ensure=>'directory',
- owner=>$username
-}
-file{"/home/$username/dev/src":
- ensure=>'directory',
- owner=>$username
-}
-file{"/home/$username/dev/tools":
- ensure=>'directory',
- owner=>$username
-}
+
+###### Google Chrome
+
 exec{'add-chrome-key':
  command=>'/usr/bin/wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -',
  unless=>'/usr/bin/strings /etc/apt/trusted.gpg|grep google 2>/dev/null'
@@ -79,6 +99,9 @@ package{"google-chrome-stable":
  ensure=>"latest",
  require=>Exec["apt-update-google"]
 }
+
+###### Ssh Setup
+
 exec{'create-ssh-key':
  command=>"/bin/su --command='ssh-keygen -f /home/$username/.ssh/id_rsa -N \"\"' $username",
  creates=>"/home/$username/.ssh/id_rsa"
@@ -87,6 +110,24 @@ file{"/home/$username/.ssh/id_rsa":
  require=>Exec['create-ssh-key'],
  mode=>"0600"
 }
-package{'zsh':
- ensure=>'latest'
+
+
+###### Spotify
+exec{'add-spotify-key':
+ command=>'/usr/bin/apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 94558F59',
+ unless=>'/usr/bin/strings /etc/apt/trusted.gpg|grep spotify 2>/dev/null'
+}
+file{'/etc/apt/sources.list.d/spotify.list':
+ ensure=>"present",
+ content=>"deb http://repository.spotify.com stable non-free",
+ require=>Exec['add-chrome-key']
+}
+exec{'apt-update-spotify':
+ command=>"/usr/bin/apt-get update",
+ require=>File['/etc/apt/sources.list.d/spotify.list'],
+ creates=>'/usr/bin/spotify'
+}
+package{'spotify-client':
+ ensure=>'latest',
+ require=>Exec['apt-update-spotify']
 }

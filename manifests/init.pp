@@ -65,7 +65,7 @@ package{'sublime-text':
 
 exec{'download-vagrant':
  command=>'/usr/bin/curl -o /tmp/vagrant.deb http://files.vagrantup.com/packages/b12c7e8814171c1295ef82416ffe51e8a168a244/vagrant_1.3.1_x86_64.deb',
- creates=>'/tmp/vagrant.deb',
+ creates=>'/usr/bin/vagrant',
  require=>Package['curl']
 }
 exec{'install-vagrant':

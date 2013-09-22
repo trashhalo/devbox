@@ -5,23 +5,24 @@ $email = "stephen@mindjunk.org"
 ###### Global Packages
 
 package{'vim':
- ensure => 'latest'
+ ensure => 'present'
 }
 package{'git-core':
- ensure => 'latest'
+ ensure => 'present'
 }
 package{'zsh':
- ensure=>'latest'
+ ensure=>'present'
 }
 package{'virtualbox':
- ensure => 'latest'
+ ensure => 'present'
 }
 package{'curl':
- ensure => 'latest'
+ ensure => 'present'
 }
 package{'keepassx':
- ensure => 'latest'
+ ensure => 'present'
 }
+
 ####### Development Folders
 
 file{"/home/$username/dev":
@@ -87,24 +88,16 @@ exec{'add-vagrant-plugin-list':
 }
 
 ###### Google Chrome
+exec{'download-google-chrome':
+ command=>'/usr/bin/curl -o /tmp/googlechrome.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb',
+ creates=>'/usr/bin/google-chrome',
+ require=>Package['curl']
+}
 
-exec{'add-chrome-key':
- command=>'/usr/bin/wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -',
- unless=>'/usr/bin/strings /etc/apt/trusted.gpg|grep google 2>/dev/null'
-}
-file{'/etc/apt/sources.list.d/google.list':
- ensure=>"present",
- content=>"deb http://dl.google.com/linux/chrome/deb/ stable main",
- require=>Exec['add-chrome-key']
-}
-exec{'apt-update-google':
- command=>"/usr/bin/apt-get update",
- require=>File['/etc/apt/sources.list.d/google.list'],
+exec{'install-google-chrome':
+ command=>'/usr/bin/dpkg -i /tmp/googlechrome.deb',
+ require=>Exec['download-google-chrome'],
  creates=>'/usr/bin/google-chrome'
-}
-package{"google-chrome-stable":
- ensure=>"latest",
- require=>Exec["apt-update-google"]
 }
 
 ###### Ssh Setup
@@ -113,6 +106,7 @@ exec{'create-ssh-key':
  command=>"/bin/su --command='ssh-keygen -f /home/$username/.ssh/id_rsa -N \"\"' $username",
  creates=>"/home/$username/.ssh/id_rsa"
 }
+
 file{"/home/$username/.ssh/id_rsa":
  require=>Exec['create-ssh-key'],
  mode=>"0600"
@@ -125,10 +119,11 @@ exec{'add-spotify-key':
  command=>'/usr/bin/apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 94558F59',
  unless=>'/usr/bin/strings /etc/apt/trusted.gpg|grep spotify 2>/dev/null'
 }
+
 file{'/etc/apt/sources.list.d/spotify.list':
  ensure=>"present",
  content=>"deb http://repository.spotify.com stable non-free",
- require=>Exec['add-chrome-key']
+ require=>Exec['add-spotify-key']
 }
 exec{'apt-update-spotify':
  command=>"/usr/bin/apt-get update",

@@ -23,6 +23,19 @@ define remote-package($packagename=$title,$url,$creates){
 	}
 }
 
+define apt-update-single($repofile=$title,$source){
+	file{"/etc/apt/sources.list.d/${repofile}.list":
+		ensure=>'present',
+		content=>$source,
+	}
+
+	exec{"apt-get-update-$repofile":
+		command=>"/usr/bin/apt-get update -o Dir::Etc::sourcelist=\"sources.list.d/${repofile}.list\" -o Dir::Etc::sourceparts=\"-\" -o APT::Get::List-Cleanup=\"0\"",
+		require=>File["/etc/apt/sources.list.d/${repofile}.list"],
+		unless=>"/bin/ls /var/lib/apt/lists/|grep $repofile 2>/dev/null"
+	}
+}
+
 ###### Global Packages
 
 package{'vim':
@@ -88,13 +101,13 @@ exec{'git-push-style':
 
 ###### Sublime Text
 
-exec{'add-sublime-ppa':
- command=>'/usr/bin/add-apt-repository ppa:webupd8team/sublime-text-2 && apt-get update',
- creates=>'/etc/apt/sources.list.d/webupd8team-sublime-text-2-raring.list'
+apt-update-single{'sublime':
+	source=>'deb http://ppa.launchpad.net/webupd8team/sublime-text-2/ubuntu raring main'
 }
+
 package{'sublime-text':
  ensure => 'present',
- require => Exec['add-sublime-ppa']
+ require => Apt-update-single['sublime']
 }
 
 ###### Vagrant Setup
@@ -130,19 +143,14 @@ exec{'add-spotify-key':
  unless=>'/usr/bin/strings /etc/apt/trusted.gpg|grep spotify 2>/dev/null'
 }
 
-file{'/etc/apt/sources.list.d/spotify.list':
- ensure=>"present",
- content=>"deb http://repository.spotify.com stable non-free",
- require=>Exec['add-spotify-key']
+apt-update-single{'spotify':
+	source=>'deb http://repository.spotify.com stable non-free',
+	require=>Exec['add-spotify-key']
 }
-exec{'apt-update-spotify':
- command=>"/usr/bin/apt-get update",
- require=>File['/etc/apt/sources.list.d/spotify.list'],
- creates=>'/usr/bin/spotify'
-}
+
 package{'spotify-client':
  ensure=>'present',
- require=>Exec['apt-update-spotify']
+ require=>Apt-update-single['spotify']
 }
 
 ###### Oh My ZSH

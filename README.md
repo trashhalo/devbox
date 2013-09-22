@@ -18,6 +18,7 @@ Packages:
 * google-chrome
 * spotify
 * vagrant
+* keepassx
 
 Apt-Reps:  
 * ppa:webupd8team/sublime-text-2 

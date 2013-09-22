@@ -19,7 +19,7 @@ package{'virtualbox':
 package{'curl':
  ensure => 'latest'
 }
-package{'nvidia-313-updates':
+package{'keepassx':
  ensure => 'latest'
 }
 ####### Development Folders
@@ -151,6 +151,7 @@ user { "$username":
 }
 
 ##### Remove the dots drawn on login
+# TODO doesn't seem to work
 exec{'remove-lightdm-dots':
- command=>'/usr/bin/gsettings set com.canonical.unity-greeter draw-grid false'
+ command=>'/bin/su -s /bin/bash --command="gsettings set com.canonical.unity-greeter draw-grid false" lightdm'
 }

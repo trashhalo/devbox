@@ -19,7 +19,9 @@ package{'virtualbox':
 package{'curl':
  ensure => 'latest'
 }
-
+package{'nvidia-313-updates':
+ ensure => 'latest'
+}
 ####### Development Folders
 
 file{"/home/$username/dev":
@@ -146,4 +148,9 @@ exec{'oh-my':
 user { "$username":
   ensure => present,
   shell  => "/bin/zsh",
+}
+
+##### Remove the dots drawn on login
+exec{'remove-lightdm-dots':
+ command=>'/usr/bin/gsettings set com.canonical.unity-greeter draw-grid false'
 }

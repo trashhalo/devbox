@@ -1,6 +1,7 @@
 $username = "trashhalo"
 $fullname = "Stephen Solka"
 $email = "stephen@mindjunk.org"
+
 ###### Helper Types
 
 package{'curl':
@@ -92,7 +93,7 @@ exec{'add-sublime-ppa':
  creates=>'/etc/apt/sources.list.d/webupd8team-sublime-text-2-raring.list'
 }
 package{'sublime-text':
- ensure => 'latest',
+ ensure => 'present',
  require => Exec['add-sublime-ppa']
 }
 
@@ -140,7 +141,7 @@ exec{'apt-update-spotify':
  creates=>'/usr/bin/spotify'
 }
 package{'spotify-client':
- ensure=>'latest',
+ ensure=>'present',
  require=>Exec['apt-update-spotify']
 }
 

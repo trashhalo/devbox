@@ -19,6 +19,7 @@ Packages:
 * spotify
 * vagrant
 * keepassx
+* google-talk-voice-plugin
 
 Apt-Reps:  
 * ppa:webupd8team/sublime-text-2 

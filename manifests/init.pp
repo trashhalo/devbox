@@ -82,7 +82,8 @@ exec{'add-ubuntu-vagrant-box':
 }
 exec{'add-vagrant-plugin-list':
  command=>"/bin/su --command='/usr/bin/vagrant plugin install vagrant-list' $username",
- require=>Exec['install-vagrant']
+ require=>Exec['install-vagrant'],
+ unless=>"/bin/cat /home/$username/.vagrant.d/plugins.json|grep vagrant-list 2>/dev/null"
 }
 
 ###### Google Chrome
@@ -154,4 +155,17 @@ user { "$username":
 # TODO doesn't seem to work
 exec{'remove-lightdm-dots':
  command=>'/bin/su -s /bin/bash --command="gsettings set com.canonical.unity-greeter draw-grid false" lightdm'
+}
+
+##### Google Talk Voice Plugin
+exec{'download-google-talk-voice':
+ command=>'/usr/bin/curl -o /tmp/googletalkvoice.deb https://dl.google.com/linux/direct/google-talkplugin_current_amd64.deb',
+ creates=>'/opt/google/talkplugin/',
+ require=>Package['curl']
+}
+
+exec{'install-google-talk-voice':
+ command=>'/usr/bin/dpkg -i /tmp/googletalkvoice.deb',
+ require=>Exec['download-google-talk-voice'],
+ creates=>'/opt/google/talkplugin/'
 }

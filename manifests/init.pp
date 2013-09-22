@@ -1,6 +1,26 @@
 $username = "trashhalo"
 $fullname = "Stephen Solka"
 $email = "stephen@mindjunk.org"
+###### Helper Types
+
+package{'curl':
+	ensure => 'present'
+}
+
+define remote-package($packagename=$title,$url,$creates){
+	exec{"download-$packagename":
+ 		command=>"/usr/bin/curl -o /tmp/$packagename.deb $url",
+ 		creates=>$creates,
+ 		require=>Package['curl']
+ 	}
+
+	package{"$packagename":
+		ensure=>"present",
+ 		require=>Exec["download-$packagename"],
+ 		source=>"/tmp/$packagename.deb",
+ 		provider=>"dpkg"
+	}
+}
 
 ###### Global Packages
 
@@ -16,11 +36,23 @@ package{'zsh':
 package{'virtualbox':
  ensure => 'present'
 }
-package{'curl':
- ensure => 'present'
-}
 package{'keepassx':
  ensure => 'present'
+}
+
+remote-package{'google-talkplugin':
+	url=>"https://dl.google.com/linux/direct/google-talkplugin_current_amd64.deb",
+	creates=>'/opt/google/talkplugin/'
+}
+
+remote-package{'vagrant':
+	url=>"http://files.vagrantup.com/packages/b12c7e8814171c1295ef82416ffe51e8a168a244/vagrant_1.3.1_x86_64.deb",
+	creates=>'/usr/bin/vagrant'
+}
+
+remote-package{'google-chrome-stable':
+	url=>"https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb",
+	creates=>'/usr/bin/google-chrome'
 }
 
 ####### Development Folders
@@ -64,40 +96,17 @@ package{'sublime-text':
  require => Exec['add-sublime-ppa']
 }
 
-###### Vagrant
+###### Vagrant Setup
 
-exec{'download-vagrant':
- command=>'/usr/bin/curl -o /tmp/vagrant.deb http://files.vagrantup.com/packages/b12c7e8814171c1295ef82416ffe51e8a168a244/vagrant_1.3.1_x86_64.deb',
- creates=>'/usr/bin/vagrant',
- require=>Package['curl']
-}
-exec{'install-vagrant':
- command=>'/usr/bin/dpkg -i /tmp/vagrant.deb',
- require=>Exec['download-vagrant'],
- creates=>'/usr/bin/vagrant'
-}
 exec{'add-ubuntu-vagrant-box':
  command=>"/bin/su --command='/usr/bin/vagrant box add precise64 http://files.vagrantup.com/precise64.box' $username",
- require=>Exec['install-vagrant'],
+ require=>Remote-package['vagrant'],
  creates=>"/home/$username/.vagrant.d/boxes/precise64"
 }
 exec{'add-vagrant-plugin-list':
  command=>"/bin/su --command='/usr/bin/vagrant plugin install vagrant-list' $username",
- require=>Exec['install-vagrant'],
+ require=>Remote-package['vagrant'],
  unless=>"/bin/cat /home/$username/.vagrant.d/plugins.json|grep vagrant-list 2>/dev/null"
-}
-
-###### Google Chrome
-exec{'download-google-chrome':
- command=>'/usr/bin/curl -o /tmp/googlechrome.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb',
- creates=>'/usr/bin/google-chrome',
- require=>Package['curl']
-}
-
-exec{'install-google-chrome':
- command=>'/usr/bin/dpkg -i /tmp/googlechrome.deb',
- require=>Exec['download-google-chrome'],
- creates=>'/usr/bin/google-chrome'
 }
 
 ###### Ssh Setup
@@ -141,6 +150,7 @@ exec{'oh-my':
  require=>[Package['zsh'],Package['curl']],
  creates=>"/home/$username/.oh-my-zsh"
 }
+
 user { "$username":
   ensure => present,
   shell  => "/bin/zsh",
@@ -150,17 +160,4 @@ user { "$username":
 # TODO doesn't seem to work
 exec{'remove-lightdm-dots':
  command=>'/bin/su -s /bin/bash --command="gsettings set com.canonical.unity-greeter draw-grid false" lightdm'
-}
-
-##### Google Talk Voice Plugin
-exec{'download-google-talk-voice':
- command=>'/usr/bin/curl -o /tmp/googletalkvoice.deb https://dl.google.com/linux/direct/google-talkplugin_current_amd64.deb',
- creates=>'/opt/google/talkplugin/',
- require=>Package['curl']
-}
-
-exec{'install-google-talk-voice':
- command=>'/usr/bin/dpkg -i /tmp/googletalkvoice.deb',
- require=>Exec['download-google-talk-voice'],
- creates=>'/opt/google/talkplugin/'
 }
